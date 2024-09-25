@@ -17,6 +17,7 @@ use App\Models\CausePartnershipAndCollaboration;
 use App\Models\CauseReport;
 use App\Models\CauseTargetAudience;
 use App\Models\CauseTargetRegion;
+use App\Models\Conversation;
 use App\Models\PartnershipAndCollaborationCategory;
 use App\Models\TargetAudienceCategory;
 use App\Models\TargetRegion;
@@ -562,57 +563,64 @@ class UserController extends Controller
     }
 
 
-   // Method to list all messages for the logged-in user
     public function listMessages()
     {
-        // Fetch messages only for the logged-in user or from the chatbot (user_id is null)
-        $messages = Message::where(function($query) {
-                            $query->where('user_id', auth()->user()->id)
-                                ->orWhereNull('user_id');
-                        })
-                        ->orderBy('created_at', 'asc') // Optional: Order by creation time
-                        ->get();
-
+        // Find the conversation for the logged-in user, or create one if it doesn't exist
+        $conversation = Conversation::firstOrCreate(
+            ['user_id' => auth()->user()->id]
+        );
+    
+        // Fetch messages for the logged-in user's conversation
+        $messages = Message::where('conversation_id', $conversation->id)
+                           ->orderBy('created_at', 'asc')
+                           ->get();
+    
         return view('user.message.list', ['messages' => $messages]);
     }
+    
+   
 
 
 
    // Method to store a new message
-    public function storeMessage(Request $request)
+   public function storeMessage(Request $request)
     {
-        // Validate the incoming request data
         $validatedData = $request->validate([
             'message' => 'required|string',
         ]);
 
-        // Create a new message using the validated data
+        // Check if the user already has an active conversation, or create one
+        $conversation = Conversation::firstOrCreate([
+            'user_id' => auth()->user()->id
+        ]);
+
+        // Create a new message
         $message = new Message();
         $message->message = $validatedData['message'];
         $message->user_id = auth()->user()->id;
+        $message->conversation_id = $conversation->id; // Link the conversation
         $message->save();
 
         // Send the message to Gemini and get the response
         try {
-            $apiKey = config('services.gemini.api_key'); // Fetch the API key
+            $apiKey = config('services.gemini.api_key');
             $response = Gemini::geminiPro()->generateContent($validatedData['message'], $apiKey);
             $responseText = $response->text();
 
             // Save the response as a new message from the chatbot
             $chatbotMessage = new Message();
             $chatbotMessage->message = $responseText;
-            $chatbotMessage->user_id = null; // Assuming null indicates the message is from the chatbot
+            $chatbotMessage->user_id = null; // Indicating chatbot
+            $chatbotMessage->conversation_id = $conversation->id; // Assign the same conversation
             $chatbotMessage->save();
 
         } catch (\Exception $e) {
-            dd($e->getMessage());
-            // Handle exception
             return redirect()->route('user_message_list')->with('error', 'An error occurred while communicating with the chatbot.');
         }
 
-        // Redirect back to the message list with a success message
         return redirect()->route('user_message_list');
     }
+
 
 
 

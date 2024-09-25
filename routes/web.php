@@ -84,7 +84,7 @@ Route::post('/event/ticket/free-booking', [EventController::class, 'free_booking
 
 
 Route::get('/causes', [CauseController::class, 'index'])->name('causes');
-Route::get('/causes/{slug}', [CauseController::class, 'index'])->name('cause');
+Route::get('/causes/{slug}', [CauseController::class, 'detail'])->name('cause');
 Route::post('/causes/{id}/like', [CauseController::class, 'toggleLike'])->name('cause.like')->middleware('auth');
 Route::post('/causes/{id}/bookmark', [CauseController::class, 'toggleBookmark'])->name('cause.bookmark')->middleware('auth');
 

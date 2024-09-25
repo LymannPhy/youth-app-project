@@ -19,7 +19,7 @@
                                                 <th>Photo</th>
                                                 <th>Name</th>
                                                 <th>Email</th>
-                                                <th>Action</th>
+                                                <th>Block</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -32,13 +32,25 @@
                                                     </td>
                                                     <td>{{ $user->name }}</td>
                                                     <td>{{ $user->email }}</td>
-                                                    <td class="pt_10 pb_10">
-                                                        <a href="{{ route('admin_user_block', $user->id) }}"
-                                                            class="btn btn-danger btn-sm">
-                                                            <i class="fas fa-ban"></i>
-                                                            {{ $user->block ? 'Unblock' : 'Block' }}
-                                                        </a>
+                                                    <td>
+                                                        <div class="outerDivFull">
+                                                            <form action="{{ route('admin_user_block', $user->id) }}"
+                                                                method="GET" class="block-form">
+                                                                @csrf
+                                                                <input type="hidden" name="block" class="block-input"
+                                                                    value="{{ $user->block ? 'block' : 'unblock' }}">
+                                                                <div class="switchToggle">
+                                                                    <!-- Checkbox should be checked if the user is blocked (Yes means blocked) -->
+                                                                    <input type="checkbox" id="switch-{{ $user->id }}"
+                                                                        class="block-checkbox"
+                                                                        {{ $user->block ? 'checked' : '' }}>
+                                                                    <label for="switch-{{ $user->id }}">Toggle</label>
+                                                                </div>
+                                                            </form>
+                                                        </div>
                                                     </td>
+
+
                                                 </tr>
                                             @endforeach
                                         </tbody>
@@ -51,4 +63,17 @@
             </div>
         </section>
     </div>
+    <script>
+        // Handle block toggle changes
+        document.querySelectorAll('.block-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const form = this.closest('.block-form');
+                const blockInput = form.querySelector('.block-input');
+
+                // Reversed logic: If checked, block the user; if unchecked, unblock
+                blockInput.value = this.checked ? 'block' : 'unblock';
+                form.submit();
+            });
+        });
+    </script>
 @endsection

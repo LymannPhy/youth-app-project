@@ -48,32 +48,54 @@ class AdminTestimonialController extends Controller
 
     public function edit_submit(Request $request, $id)
     {
+        // Validate the required fields
         $request->validate([
             'name' => 'required',
             'designation' => 'required',
             'comment' => 'required'
         ]);
-
+    
+        // Find the testimonial by ID
         $testimonial = Testimonial::findOrFail($id);
-
-        if($request->photo != null) {
+    
+        // Check if a new photo was uploaded
+        if ($request->photo != null) {
+            // Validate the uploaded photo
             $request->validate([
                 'photo' => 'image|mimes:jpg,jpeg,png',
             ]);
-            unlink(public_path('uploads/'.$testimonial->photo));
-
-            $final_name = 'testimonial_'.time().'.'.$request->photo->extension();
+            
+            // Check if the current photo exists before attempting to unlink
+            if ($testimonial->photo != null) {
+                $filePath = public_path('uploads/' . $testimonial->photo);
+                
+                if (file_exists($filePath)) {
+                    unlink($filePath); // Delete the existing file
+                }
+            }
+    
+            // Generate a new unique name for the uploaded photo
+            $final_name = 'testimonial_' . time() . '.' . $request->photo->extension();
+            
+            // Move the uploaded file to the 'uploads' directory
             $request->photo->move(public_path('uploads'), $final_name);
+            
+            // Update the testimonial's photo field with the new file name
             $testimonial->photo = $final_name;
         }
-
+    
+        // Update the other fields of the testimonial
         $testimonial->name = $request->name;
         $testimonial->designation = $request->designation;
         $testimonial->comment = $request->comment;
+        
+        // Save the changes to the database
         $testimonial->update();
-
-        return redirect()->back()->with('success','Testimonial updated successfully');
+    
+        // Redirect back with a success message
+        return redirect()->back()->with('success', 'Testimonial updated successfully');
     }
+    
 
     public function delete($id)
     {
