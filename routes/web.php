@@ -131,6 +131,7 @@ Route::middleware('auth', 'verified')->prefix('user')->group(function () {
     Route::get('/cause/edit/{id}', [UserController::class, 'edit'])->name('user_cause_edit');
     Route::get('/cause/delete/{id}', [UserController::class, 'delete'])->name('user_cause_delete');
     Route::post('/cause/edit/{id}', [UserController::class, 'edit_submit'])->name('user_cause_edit_submit');
+    Route::get('/download/supporting-docs', [UserController::class, 'downloadWordFile'])->name('download.docx');
     Route::get('/cause/photo/{id}', [UserController::class, 'photo'])->name('user_cause_photo');
     Route::post('/cause/photo/submit', [UserController::class, 'photo_submit'])->name('user_cause_photo_submit');
     Route::get('/cause/photo/delete/{id}', [UserController::class, 'photo_delete'])->name('user_cause_photo_delete');

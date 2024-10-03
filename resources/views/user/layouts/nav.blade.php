@@ -15,12 +15,16 @@
         <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
                 aria-expanded="false">
-                @if (filter_var(Auth::user()->photo, FILTER_VALIDATE_URL))
+                @if (Auth::user()->photo && filter_var(Auth::user()->photo, FILTER_VALIDATE_URL))
                     <!-- Display URL directly -->
                     <img src="{{ Auth::user()->photo }}" alt="Profile Picture" class="rounded-circle-custom">
-                @else
+                @elseif (Auth::user()->photo)
                     <!-- Display local file path -->
                     <img src="{{ asset('uploads/' . Auth::user()->photo) }}" alt="Profile Picture"
+                        class="rounded-circle-custom">
+                @else
+                    <!-- Default profile picture if none is set -->
+                    <img src="{{ asset('uploads/default-user-icon.jpg') }}" alt="Default Profile Picture"
                         class="rounded-circle-custom">
                 @endif
             </a>
@@ -32,11 +36,12 @@
                         @csrf
                         <a class="dropdown-item" href="{{ route('logout') }}"
                             onclick="event.preventDefault();
-                        this.closest('form').submit();"><i
+                           this.closest('form').submit();"><i
                                 class="fas fa-sign-out-alt"></i> Logout</a>
                     </form>
                 </li>
             </ul>
         </li>
+
     </ul>
 </nav>

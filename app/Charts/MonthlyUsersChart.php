@@ -29,7 +29,7 @@ class MonthlyUsersChart
 
         // Fetch the number of users grouped by month
         $users = User::select(DB::raw("COUNT(*) as count"), DB::raw("MONTHNAME(created_at) as month_name"))
-                    ->whereYear('created_at',  $this->year)
+                    ->whereYear('created_at', $this->year)
                     ->groupBy(DB::raw("MONTH(created_at)"), DB::raw("MONTHNAME(created_at)"))
                     ->orderBy(DB::raw("MONTH(created_at)"))
                     ->pluck('count', 'month_name')
@@ -40,15 +40,11 @@ class MonthlyUsersChart
             $users = ['No Data' => 0];
         }
 
-        return $this->chart->lineChart()
-        ->setTitle('New Users - ' . $year)
-        ->setDataset([
-            [
-                'name' => 'User Registrations',
-                'data' => array_values($users)
-            ]
-        ])
-        ->setXAxis(array_keys($users));
-
+        // Create a donut chart
+        return $this->chart->donutChart()
+            ->setTitle('New Users in ' . $year)
+            ->setSubtitle('Registrations by Month')
+            ->setDataset(array_values($users)) 
+            ->setLabels(array_keys($users)); 
     }
 }

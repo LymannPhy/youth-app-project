@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\Hash;
 use GeminiAPI\Laravel\Facades\Gemini;
 use Telegram\Bot\Laravel\Facades\Telegram;
 use Spatie\Image\Image;
+use ZipArchive;
 
 class UserController extends Controller
 {
@@ -285,6 +286,21 @@ class UserController extends Controller
 
         // Redirect with success message
         return redirect()->route('user_cause')->with('success', 'Cause created successfully');
+    }
+
+
+    public function downloadWordFile()
+    {
+        // Path to your pre-existing Word document
+        $filePath = public_path('uploads/supporting_documents/sample.docx');
+        
+        // Check if the file exists
+        if (file_exists($filePath)) {
+            // Download the file
+            return response()->download($filePath, 'supporting_document.docx');
+        } else {
+            return redirect()->back()->with('error', 'File not found.');
+        }
     }
 
 
@@ -578,8 +594,6 @@ class UserController extends Controller
         return view('user.message.list', ['messages' => $messages]);
     }
     
-   
-
 
 
    // Method to store a new message

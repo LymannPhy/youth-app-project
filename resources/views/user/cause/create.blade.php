@@ -6,11 +6,22 @@
             <div class="section-header d-flex justify-content-between">
                 <h1>Create Project</h1>
                 <div>
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#imageModal"><i
-                            class="fas fa-folder-open"></i> Sample</button>
-                    <a href="{{ route('user_cause') }}" class="btn btn-primary"><i class="fas fa-plus"></i> View All</a>
+                    <!-- Existing buttons -->
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#imageModal">
+                        <i class="fas fa-folder-open"></i> Input Sample
+                    </button>
+
+                    <!-- New button to download the Word document -->
+                    <a href="{{ route('download.docx') }}" class="btn btn-primary">
+                        <i class="fas fa-file-word"></i> Download Supporting Docs (DOCX)
+                    </a>
+
+                    <a href="{{ route('user_cause') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> View All
+                    </a>
                 </div>
             </div>
+
             <div class="section-body">
                 <div class="row">
                     <div class="col-md-12">
