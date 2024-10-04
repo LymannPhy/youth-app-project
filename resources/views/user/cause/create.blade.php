@@ -136,8 +136,8 @@
                                     <div class="form-group mb-3">
                                         <label>Supporting Documents</label>
                                         <input type="file" name="supporting_documents[]" class="form-control" multiple>
-                                        <small class="form-text text-muted">Upload files as necessary. They will be saved as
-                                            JSON.</small>
+                                        <small class="form-text text-muted">Please upload the relevant supporting documents
+                                            as needed.</small>
                                     </div>
 
                                     <div class="form-group">

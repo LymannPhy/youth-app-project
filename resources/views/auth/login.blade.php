@@ -980,9 +980,12 @@
                         </div>
 
                         <div class="d-flex justify-content-between align-items-center">
-                            <!-- Checkbox -->
+                            <!-- Hidden field to send false when the checkbox is unchecked -->
+                            <input type="hidden" name="remember" value="0">
+
+                            <!-- Checkbox for "Remember me" -->
                             <div class="form-check mb-0">
-                                <input class="form-check-input me-2" type="checkbox" value=""
+                                <input class="form-check-input me-2" type="checkbox" name="remember" value="1"
                                     id="form2Example3" />
                                 <label class="form-check-label" for="form2Example3">
                                     Remember me

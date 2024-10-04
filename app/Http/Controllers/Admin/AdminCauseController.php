@@ -21,6 +21,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Log; 
 
 class AdminCauseController extends Controller
 {
@@ -370,11 +371,23 @@ class AdminCauseController extends Controller
     public function photo_delete($id)
     {
         $cause_photo = CausePhoto::findOrFail($id);
-        unlink(public_path('uploads/'.$cause_photo->photo));
+        $file_path = public_path('uploads/' . $cause_photo->photo);
+        
+        // Check if the file exists
+        if (file_exists($file_path)) {
+            // If the file exists, delete it
+            unlink($file_path);
+        } else {
+            // Optionally log an error message for admin awareness
+            Log::warning('File not found during deletion attempt: ' . $file_path);
+        }
+    
+        // Delete the record from the database
         $cause_photo->delete();
-
-        return redirect()->back()->with('success','Cause photo deleted successfully');
+    
+        return redirect()->back()->with('success', 'Cause photo deleted successfully.');
     }
+    
 
 
     public function video($id)
@@ -469,7 +482,7 @@ class AdminCauseController extends Controller
         return view('admin.cause.invoice', compact('donation_data', 'user_data'));
     }
 
-    //Update proposal status
+   // Update proposal status
     public function updateStatus(Request $request, $id)
     {
         $request->validate([
@@ -478,10 +491,20 @@ class AdminCauseController extends Controller
 
         $cause = Cause::findOrFail($id);
         $cause->status = $request->status;
+
+        // Set is_featured based on the status
+        if ($request->status === 'approve') {
+            $cause->is_featured = 'Yes';
+        } else {
+            $cause->is_featured = 'No'; 
+        }
+
         $cause->save();
 
         return redirect()->back()->with('success', 'Cause status updated successfully');
     }
+
+
 
     public function approval()
     {

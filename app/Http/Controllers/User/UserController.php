@@ -27,7 +27,8 @@ use Illuminate\Support\Facades\Hash;
 use GeminiAPI\Laravel\Facades\Gemini;
 use Telegram\Bot\Laravel\Facades\Telegram;
 use Spatie\Image\Image;
-use ZipArchive;
+use Illuminate\Support\Facades\Log;
+
 
 class UserController extends Controller
 {
@@ -188,7 +189,7 @@ class UserController extends Controller
         if ($user->block == 1) {
             return redirect()->back()->with('error', 'You are blocked and cannot create a cause.');
         }
-        // dd($request->all());
+        
         // Validate the required fields
         $request->validate([
             'name' => ['required'],
@@ -249,8 +250,6 @@ class UserController extends Controller
 
         // Handle target audience categories (pivot table entries)
         if ($request->has('target_audience')) {
-            // $obj->targetAudienceCategories()->attach($request->target_audience_categories);
-            // dd($request->target_audience_categories);
             foreach($request->target_audience as $ret)
             {
                 $target = new CauseTargetAudience();
@@ -596,45 +595,51 @@ class UserController extends Controller
     
 
 
-   // Method to store a new message
-   public function storeMessage(Request $request)
+    public function storeMessage(Request $request)
     {
+        // Validate the incoming request data
         $validatedData = $request->validate([
             'message' => 'required|string',
         ]);
-
+    
         // Check if the user already has an active conversation, or create one
         $conversation = Conversation::firstOrCreate([
             'user_id' => auth()->user()->id
         ]);
 
+        // dd($conversation);
+    
         // Create a new message
         $message = new Message();
         $message->message = $validatedData['message'];
         $message->user_id = auth()->user()->id;
         $message->conversation_id = $conversation->id; // Link the conversation
         $message->save();
-
+    
         // Send the message to Gemini and get the response
         try {
+        
             $apiKey = config('services.gemini.api_key');
             $response = Gemini::geminiPro()->generateContent($validatedData['message'], $apiKey);
+            
             $responseText = $response->text();
-
-            // Save the response as a new message from the chatbot
+            
+            // Save the chatbot response
             $chatbotMessage = new Message();
             $chatbotMessage->message = $responseText;
-            $chatbotMessage->user_id = null; // Indicating chatbot
-            $chatbotMessage->conversation_id = $conversation->id; // Assign the same conversation
+            $chatbotMessage->user_id = null; 
+            $chatbotMessage->conversation_id = $conversation->id;
             $chatbotMessage->save();
-
+        
         } catch (\Exception $e) {
             return redirect()->route('user_message_list')->with('error', 'An error occurred while communicating with the chatbot.');
         }
-
+        
+    
         return redirect()->route('user_message_list');
     }
-
+    
+    
 
 
 

@@ -18,7 +18,9 @@
                                     <div class="{{ $message->user_id === auth()->user()->id ? 'p-3 me-3 border bg-body-tertiary' : 'p-3 ms-3' }}"
                                         style="border-radius: 15px; background-color: {{ $message->user_id === auth()->user()->id ? 'rgba(0,0,0,.1)' : 'rgba(57, 192, 237,.2)' }}; max-width: 75%; word-wrap: break-word; overflow-wrap: break-word;">
                                         <p class="small mb-0">{{ $message->message }}</p>
-                                        <small class="text-muted d-block">{{ $message->created_at->format('H:i') }}</small>
+                                        <small
+                                            class="text-muted d-block">{{ $message->created_at->setTimezone('Asia/Phnom_Penh')->format('H:i') }}</small>
+
                                     </div>
                                     <img src="{{ $message->user_id === auth()->user()->id
                                         ? (auth()->user()->photo != null

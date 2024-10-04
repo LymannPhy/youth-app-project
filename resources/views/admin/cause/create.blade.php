@@ -20,8 +20,16 @@
 
                                     <div class="form-group mb-3">
                                         <label>Featured Photo *</label>
-                                        <input type="file" name="featured_photo" class="form-control">
+                                        <div>
+                                            <!-- Preview image -->
+                                            <img id="featuredPhotoPreview" src="#" alt="Featured Photo Preview"
+                                                style="display:none; width:200px; height:auto; margin-bottom: 10px;" />
+                                        </div>
+                                        <input type="file" name="featured_photo" class="form-control"
+                                            id="featuredPhotoInput" accept="image/*">
                                     </div>
+
+
 
                                     <div class="row">
                                         <div class="col-md-4">
@@ -151,5 +159,23 @@
     <script>
         new MultiSelectTag('partnerships')
         new MultiSelectTag('target_audience')
+
+
+        document.getElementById('featuredPhotoInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            const preview = document.getElementById('featuredPhotoPreview');
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                preview.src = '#';
+                preview.style.display = 'none';
+            }
+        });
     </script>
 @endsection

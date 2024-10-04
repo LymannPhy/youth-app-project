@@ -25,12 +25,23 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
-        $request->authenticate();
+        // Check if 'remember' is present in the request
+        $remember = $request->has('remember');
 
-        $request->session()->regenerate();
+        // Attempt to authenticate the user with the remember option
+        if ($request->authenticate($remember)) {
+            // Regenerate session ID to prevent session fixation
+            $request->session()->regenerate();
 
-        return redirect()->intended(RouteServiceProvider::HOME)->with('success', 'Login is successful.');
+            // Redirect to intended route after successful login
+            return redirect()->intended(RouteServiceProvider::HOME)
+                            ->with('success', 'Login is successful.');
+        }
+
+        // If authentication fails, redirect back with an error
+        return redirect()->back()->withErrors(['error' => 'Invalid credentials']);
     }
+
 
     /**
      * Destroy an authenticated session.
