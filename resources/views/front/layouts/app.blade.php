@@ -91,7 +91,7 @@
                         <h2 class="heading">Important Pages</h2>
                         <ul class="useful-links">
                             <li><a href="{{ route('home') }}"><i class="fas fa-angle-right"></i> Home</a></li>
-                            <li><a href="{{ route('causes') }}"><i class="fas fa-angle-right"></i> Causes</a></li>
+                            <li><a href="{{ route('causes') }}"><i class="fas fa-angle-right"></i> Projects</a></li>
                             <li><a href="{{ route('events') }}"><i class="fas fa-angle-right"></i> Events</a></li>
                             <li><a href="{{ route('volunteers') }}"><i class="fas fa-angle-right"></i> Volunteers</a>
                             </li>

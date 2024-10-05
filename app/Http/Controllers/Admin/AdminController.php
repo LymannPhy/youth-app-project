@@ -2,75 +2,90 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Charts\MonthlyCausesAreaChart;
-use App\Charts\MonthlyCausesDonationsBarChart;
-use App\Charts\MonthlyUsersChart;
+// use App\Charts\MonthlyCausesAreaChart;
+// use App\Charts\MonthlyCausesDonationsBarChart;
+// use App\Charts\SubscribersStatusChart;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Admin;
 use App\Mail\Websitemail;
 use App\Models\Cause;
+use App\Models\CauseDonation;
 use App\Models\Event;
-use App\Models\Testimonial;
 use App\Models\User;
-use App\Models\Volunteer;
 use App\Models\Subscriber;
-use App\Models\Post;
-use App\Models\Photo;
-use App\Models\Video;
+use App\Models\Volunteer;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Yajra\DataTables\DataTables;
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
-{public function dashboard(
-    MonthlyUsersChart $monthlyUsersChart, 
-    MonthlyCausesAreaChart $monthlyCausesAreaChart, 
-    MonthlyCausesDonationsBarChart $monthlyCausesDonationsBarChart
-) {
-    // Get filter parameters from request, default to current year if not provided
-    $filterYear = request()->get('year', date('Y'));
+{
+    public function dashboard()
+    { 
+        // Fetch data from the database for subscribers
+        $subscribers = Subscriber::select(DB::raw("count(*) as count, status"))
+            ->groupBy('status')
+            ->pluck('count', 'status')
+            ->toArray(); // Return as associative array
+    
+        // For causes created in the current year
+        $causes = Cause::select(DB::raw("count(*) as count, MONTH(created_at) as month"))
+            ->groupBy('month')
+            ->pluck('count', 'month')
+            ->toArray();
+    
+        // Ensure all 12 months are represented for causes
+        $months = range(1, 12);
+        $causes = array_replace(array_fill_keys($months, 0), $causes);
+    
+        // For donations
+        $causeDonations = CauseDonation::select(DB::raw("sum(price) as total, MONTH(created_at) as month"))
+            ->groupBy('month')
+            ->pluck('total', 'month')
+            ->toArray();
+    
+        // Ensure all 12 months are represented for donations
+        $causeDonations = array_replace(array_fill_keys($months, 0), $causeDonations);
 
-    // Fetch volunteer data for the Datatables
-    if (request()->ajax()) {
-        $volunteers = Volunteer::latest()->get();
-        return DataTables::of($volunteers)
-            ->addIndexColumn()
-            ->addColumn('action', function($row) {
-                $editUrl = route('admin_volunteer_edit', $row->id);
-                $deleteUrl = route('admin_volunteer_delete', $row->id);
-                $actionBtn = '<a href="' . $editUrl . '" class="edit btn btn-primary btn-sm">Edit</a>
-                <form method="POST" style="display:inline">
-                    <a href="javascript:void(0)" data-url="'.$deleteUrl.'" class="delete-button btn btn-danger btn-sm">Delete</a>
-                </form>';
-                return $actionBtn;
-            })
-            ->rawColumns(['action'])
-            ->make(true);
+        // Fetch volunteer data for the Datatables
+        if (request()->ajax()) {
+            $volunteers = Volunteer::latest()->get();
+            return DataTables::of($volunteers)
+                ->addIndexColumn()
+                ->addColumn('action', function($row) {
+                    $editUrl = route('admin_volunteer_edit', $row->id);
+                    $deleteUrl = route('admin_volunteer_delete', $row->id);
+                    $actionBtn = '<a href="' . $editUrl . '" class="edit btn btn-primary btn-sm">Edit</a>
+                    <form method="POST" style="display:inline">
+                        <a href="javascript:void(0)" data-url="'.$deleteUrl.'" class="delete-button btn btn-danger btn-sm">Delete</a>
+                    </form>';
+                    return $actionBtn;
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+    
+        // Return view with the data passed to it
+        return view('admin.dashboard', [
+            'subscribers' => json_encode(array_values($subscribers)), // Convert to array of counts
+            'causes' => json_encode(array_values($causes)), // Convert to array of counts
+            'causeDonations' => json_encode(array_values($causeDonations)), // Convert to array of totals
+            'total_events' => Event::count(),
+            'total_volunteers' => Volunteer::count(),
+            'total_users' => User::count(),
+            'total_causes' => Cause::count(),
+            'total_donations' => CauseDonation::sum('price'),
+            'total_subscribers' => Subscriber::count(),
+        ]);
     }
-
-    // Set the filter year on the chart builders and build the charts
-    $causesAreaChart = $monthlyCausesAreaChart->setYear($filterYear)->build();
-    $usersChart = $monthlyUsersChart->setYear($filterYear)->build();
-    $donationsBarChart = $monthlyCausesDonationsBarChart->setYear($filterYear)->build();
-
-    // Return view with all the data
-    return view('admin.dashboard', [
-        'chart' => $usersChart,
-        'causesAreaChart' => $causesAreaChart,
-        'causesDonationsBarChart' => $donationsBarChart, 
-        'total_causes' => Cause::count(),
-        'total_events' => Event::count(),
-        'total_testimonials' => Testimonial::count(),
-        'total_users' => User::count(),
-        'total_volunteers' => Volunteer::count(),
-        'total_subscribers' => Subscriber::count(),
-        'total_posts' => Post::count(),
-        'total_photos' => Photo::count(),
-        'total_videos' => Video::count(),
-    ]);
-}
+    
+    
+    
+    
+    
 
     
     

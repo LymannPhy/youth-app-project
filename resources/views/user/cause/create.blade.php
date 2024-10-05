@@ -55,7 +55,7 @@
 
                                     <div class="form-group mb-3">
                                         <label>Short Description *</label>
-                                        <textarea name="short_description" class="form-control h_100" cols="30" rows="10" required>{{ old('short_description') }}</textarea>
+                                        <textarea name="short_description" class="form-control h_100 editor" cols="30" rows="10" required>{{ old('short_description') }}</textarea>
                                     </div>
 
                                     <div class="form-group mb-3">

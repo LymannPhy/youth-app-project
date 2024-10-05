@@ -53,7 +53,7 @@
                     </div>
                 </div>
             </div>
-            <!-- Year Filter Form -->
+            {{-- <!-- Year Filter Form -->
             <form id="filter-form" action="{{ route('admin_dashboard') }}" method="GET">
                 <div class="row">
                     <div class="col-lg-3 col-md-6">
@@ -86,7 +86,99 @@
                 <div class="col-xl-4 col-md-12">
                     {!! $causesDonationsBarChart->container() !!}
                 </div>
+            </div> --}}
+
+            <div class="container">
+                <div class="row">
+                    <!-- Subscribers Status Chart -->
+                    <div class="col-lg-6 col-md-6">
+                        <div class="panel panel-default">
+                            <div class="section-header">
+                                <h1>Subscribers Status</h1>
+                            </div>
+                            <div class="panel-body">
+                                <div id="subscribersChart" style="height: 270px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Quarterly Causes Chart -->
+                    <div class="col-lg-6 col-md-6">
+                        <div class="panel panel-default">
+                            <div class="section-header">
+                                <h1>Quarterly Causes</h1>
+                            </div>
+                            <div class="panel-body">
+                                <div id="causesChart" style="height: 270px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr />
+                <div class="row">
+                    <!-- Monthly Donations Chart -->
+                    <div class="col-lg-12 col-md-12">
+                        <div class="panel panel-default">
+                            <div class="section-header">
+                                <h1>Cause Donations</h1>
+                            </div>
+                            <div class="panel-body">
+                                <div id="donationsChart" style="height: 270px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
+
+            <!-- Include Shield UI CSS and JS -->
+            <link rel="stylesheet" type="text/css"
+                href="http://www.shieldui.com/shared/components/latest/css/light/all.min.css" />
+            <script type="text/javascript" src="http://www.shieldui.com/shared/components/latest/js/shieldui-all.min.js"></script>
+
+            <script type="text/javascript">
+                jQuery(function($) {
+                    // Use dynamic data passed from Laravel backend
+                    var subscribersData = {!! $subscribers !!};
+                    var causesData = {!! $causes !!};
+                    var donationsData = {!! $causeDonations !!};
+        
+            
+                    // Render Subscribers Status Chart
+                    $("#subscribersChart").shieldChart({
+                        primaryHeader: {
+                            text: "Subscribers Status"
+                        },
+                        dataSeries: [{
+                            seriesType: "area",
+                            collectionAlias: "Subscribers",
+                            data: subscribersData // Use dynamic data
+                        }]
+                    });
+            
+                    // Render Causes Chart
+                    $("#causesChart").shieldChart({
+                        primaryHeader: {
+                            text: "Causes Created"
+                        },
+                        dataSeries: [{
+                            seriesType: "bar",
+                            collectionAlias: "Causes",
+                            data: causesData // Use dynamic data
+                        }]
+                    });
+            
+                    // Render Cause Donations Chart
+                    $("#donationsChart").shieldChart({
+                        primaryHeader: {
+                            text: "Cause Donations"
+                        },
+                        dataSeries: [{
+                            seriesType: "line",
+                            collectionAlias: "Donations",
+                            data: donationsData // Use dynamic data
+                        }]
+                    });
+                });
+            </script>
 
             <!-- Volunteer Data Table -->
             <div class="row mt-5">
@@ -117,7 +209,7 @@
         </section>
     </div>
 
-    <!-- Chart Scripts -->
+    {{-- <!-- Chart Scripts -->
     <script src="{{ $chart->cdn() }}"></script>
     {{ $chart->script() }}
 
@@ -125,7 +217,7 @@
     {{ $causesAreaChart->script() }}
 
     <script src="{{ $causesDonationsBarChart->cdn() }}"></script>
-    {{ $causesDonationsBarChart->script() }}
+    {{ $causesDonationsBarChart->script() }} --}}
 
     <script type="text/javascript">
         $(function() {
