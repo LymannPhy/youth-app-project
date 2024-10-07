@@ -23,13 +23,20 @@
                 <div>
                     <strong>Images: </strong>
                     @if ($report->where('report_type', 'initial')->first())
-                        @foreach ($report->where('report_type', 'initial')->first()->media as $image)
-                            <img src="{{ $image->getUrl('thumb') }}" alt="No images" class="img-fluid">
-                        @endforeach
+                        <div class="row">
+                            @foreach ($report->where('report_type', 'initial')->first()->media as $image)
+                                <div class="col-md-6 mb-3 d-flex justify-content-center">
+                                    <img src="{{ $image->getUrl('thumb') }}" alt="No images" class="img-fluid"
+                                        style="width: 100%; height: 100px; object-fit: cover;">
+                                </div>
+                            @endforeach
+                        </div>
                     @else
                         <p>No images available.</p>
                     @endif
                 </div>
+
+
             </div>
         </div>
     </div>

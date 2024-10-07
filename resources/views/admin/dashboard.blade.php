@@ -53,40 +53,6 @@
                     </div>
                 </div>
             </div>
-            {{-- <!-- Year Filter Form -->
-            <form id="filter-form" action="{{ route('admin_dashboard') }}" method="GET">
-                <div class="row">
-                    <div class="col-lg-3 col-md-6">
-                        <div class="form-group">
-                            <label for="year">Select Year:</label>
-                            <select class="form-control" id="year" name="year">
-                                @for ($i = 2020; $i <= date('Y'); $i++)
-                                    <option value="{{ $i }}"
-                                        {{ request()->get('year') == $i ? 'selected' : '' }}>{{ $i }}</option>
-                                @endfor
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6 align-self-end mb-4">
-                        <button type="submit" class="btn btn-primary">Apply Filters</button>
-                    </div>
-                </div>
-            </form>
-            <div class="row">
-                <div class="col-xl-3 col-md-6">
-                    {!! $chart->container() !!}
-                </div>
-
-                <!-- Causes Area Chart -->
-                <div class="col-xl-4 col-md-12">
-                    {!! $causesAreaChart->container() !!}
-                </div>
-
-                <!-- Events Column Chart -->
-                <div class="col-xl-4 col-md-12">
-                    {!! $causesDonationsBarChart->container() !!}
-                </div>
-            </div> --}}
 
             <div class="container">
                 <div class="row">
@@ -97,31 +63,54 @@
                                 <h1>Subscribers Status</h1>
                             </div>
                             <div class="panel-body">
+                                <select id="subscribersFilter" class="form-control">
+                                    <option value="all">All</option>
+                                    <option value="quarter1">Q1</option>
+                                    <option value="quarter2">Q2</option>
+                                    <option value="quarter3">Q3</option>
+                                    <option value="quarter4">Q4</option>
+                                </select>
                                 <div id="subscribersChart" style="height: 270px;"></div>
                             </div>
                         </div>
                     </div>
+
                     <!-- Quarterly Causes Chart -->
                     <div class="col-lg-6 col-md-6">
                         <div class="panel panel-default">
                             <div class="section-header">
-                                <h1>Quarterly Causes</h1>
+                                <h1>Quarterly Projects</h1>
                             </div>
                             <div class="panel-body">
+                                <select id="causesFilter" class="form-control">
+                                    <option value="year">Year</option>
+                                    <option value="quarter1">Q1</option>
+                                    <option value="quarter2">Q2</option>
+                                    <option value="quarter3">Q3</option>
+                                    <option value="quarter4">Q4</option>
+                                </select>
                                 <div id="causesChart" style="height: 270px;"></div>
                             </div>
                         </div>
                     </div>
                 </div>
+
                 <hr />
                 <div class="row">
                     <!-- Monthly Donations Chart -->
                     <div class="col-lg-12 col-md-12">
                         <div class="panel panel-default">
                             <div class="section-header">
-                                <h1>Cause Donations</h1>
+                                <h1>Project Donations</h1>
                             </div>
                             <div class="panel-body">
+                                <select id="donationsFilter" class="form-control">
+                                    <option value="year">Year</option>
+                                    <option value="quarter1">Q1</option>
+                                    <option value="quarter2">Q2</option>
+                                    <option value="quarter3">Q3</option>
+                                    <option value="quarter4">Q4</option>
+                                </select>
                                 <div id="donationsChart" style="height: 270px;"></div>
                             </div>
                         </div>
@@ -140,45 +129,129 @@
                     var subscribersData = {!! $subscribers !!};
                     var causesData = {!! $causes !!};
                     var donationsData = {!! $causeDonations !!};
-        
-            
-                    // Render Subscribers Status Chart
-                    $("#subscribersChart").shieldChart({
-                        primaryHeader: {
-                            text: "Subscribers Status"
-                        },
-                        dataSeries: [{
-                            seriesType: "area",
-                            collectionAlias: "Subscribers",
-                            data: subscribersData // Use dynamic data
-                        }]
+
+                    // URLs generated dynamically using Laravel's route helper
+                    var subscribersDataUrl = "{{ route('subscribers.data') }}";
+                    var causesDataUrl = "{{ route('causes.data') }}";
+                    var donationsDataUrl = "{{ route('donations.data') }}";
+
+                    // Render initial charts
+                    renderSubscribersChart(subscribersData);
+                    renderCausesChart(causesData);
+                    renderDonationsChart(donationsData);
+
+                    $('#subscribersFilter').change(function() {
+                        var filter = $(this).val();
+                        console.log("Selected filter: " + filter); // Debugging
+
+                        updateChart(subscribersDataUrl, filter, "#subscribersChart", "area", "Subscribers");
                     });
-            
-                    // Render Causes Chart
-                    $("#causesChart").shieldChart({
-                        primaryHeader: {
-                            text: "Causes Created"
-                        },
-                        dataSeries: [{
-                            seriesType: "bar",
-                            collectionAlias: "Causes",
-                            data: causesData // Use dynamic data
-                        }]
+
+
+
+                    // Causes Filter Change Event
+                    $('#causesFilter').change(function() {
+                        var filter = $(this).val();
+                        updateChart(causesDataUrl, filter, "#causesChart", "bar", "Causes Created");
                     });
-            
-                    // Render Cause Donations Chart
-                    $("#donationsChart").shieldChart({
-                        primaryHeader: {
-                            text: "Cause Donations"
-                        },
-                        dataSeries: [{
-                            seriesType: "line",
-                            collectionAlias: "Donations",
-                            data: donationsData // Use dynamic data
-                        }]
+
+                    // Donations Filter Change Event
+                    $('#donationsFilter').change(function() {
+                        var filter = $(this).val();
+                        updateChart(donationsDataUrl, filter, "#donationsChart", "line", "Cause Donations");
                     });
+
+                    // Function to render initial Subscribers Chart
+                    function renderSubscribersChart(data) {
+                        $("#subscribersChart").shieldChart({
+                            primaryHeader: {
+                                text: "Subscribers Status"
+                            },
+                            axisX: {
+                                categoricalValues: ["Inactive", "Active"] // Labels for the chart
+                            },
+                            dataSeries: [{
+                                seriesType: "area",
+                                collectionAlias: "Subscribers",
+                                data: data
+                            }]
+                        });
+                    }
+
+
+                    // Function to render initial Causes Chart
+                    function renderCausesChart(data) {
+                        $("#causesChart").shieldChart({
+                            primaryHeader: {
+                                text: "Causes Created"
+                            },
+                            dataSeries: [{
+                                seriesType: "bar",
+                                collectionAlias: "Causes",
+                                data: data
+                            }]
+                        });
+                    }
+
+                    // Function to render initial Donations Chart
+                    function renderDonationsChart(data) {
+                        $("#donationsChart").shieldChart({
+                            primaryHeader: {
+                                text: "Cause Donations"
+                            },
+                            dataSeries: [{
+                                seriesType: "line",
+                                collectionAlias: "Donations",
+                                data: data
+                            }]
+                        });
+                    }
+
+                    function updateChart(url, filter, chartId, seriesType, collectionAlias) {
+                        $.ajax({
+                            url: url,
+                            type: 'GET',
+                            data: {
+                                filter: filter
+                            },
+                            success: function(response) {
+                                console.log("Response from server:", response); // Debugging
+                                if (!response.data) {
+                                    console.error("No data found in the response");
+                                    return; // Exit if no data found
+                                }
+
+                                // Log the data being used for the chart
+                                console.log("Data for chart:", response.data);
+
+                                // Destroy old chart instance if exists
+                                if ($(chartId).data('shieldChart')) {
+                                    $(chartId).shieldChart().destroy();
+                                }
+
+                                // Reinitialize the chart with new data
+                                $(chartId).shieldChart({
+                                    primaryHeader: {
+                                        text: collectionAlias
+                                    },
+                                    dataSeries: [{
+                                        seriesType: seriesType,
+                                        collectionAlias: collectionAlias,
+                                        data: response.data // This should be in correct format
+                                    }]
+                                });
+                            },
+                            error: function(error) {
+                                console.error("Error fetching chart data: ", error);
+                            }
+                        });
+                    }
+
+
+
                 });
             </script>
+
 
             <!-- Volunteer Data Table -->
             <div class="row mt-5">
@@ -209,15 +282,6 @@
         </section>
     </div>
 
-    {{-- <!-- Chart Scripts -->
-    <script src="{{ $chart->cdn() }}"></script>
-    {{ $chart->script() }}
-
-    <script src="{{ $causesAreaChart->cdn() }}"></script>
-    {{ $causesAreaChart->script() }}
-
-    <script src="{{ $causesDonationsBarChart->cdn() }}"></script>
-    {{ $causesDonationsBarChart->script() }} --}}
 
     <script type="text/javascript">
         $(function() {

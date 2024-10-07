@@ -49,7 +49,7 @@ class AdminController extends Controller
     
         // Ensure all 12 months are represented for donations
         $causeDonations = array_replace(array_fill_keys($months, 0), $causeDonations);
-
+    
         // Fetch volunteer data for the Datatables
         if (request()->ajax()) {
             $volunteers = Volunteer::latest()->get();
@@ -82,17 +82,151 @@ class AdminController extends Controller
         ]);
     }
     
+    public function getSubscribersData(Request $request)
+    {
+        $filter = $request->filter;
     
+        // Start the query
+        $subscribersQuery = Subscriber::query();
     
+        // Initialize the month range for each quarter
+        $quarterMonths = [
+            'quarter1' => [1, 2, 3],
+            'quarter2' => [4, 5, 6],
+            'quarter3' => [7, 8, 9],
+            'quarter4' => [10, 11, 12], 
+        ];
     
+        // If "all" filter is selected
+        if ($filter == 'all') {
+            $subscribers = $subscribersQuery
+                ->select(DB::raw("DATE_FORMAT(created_at, '%Y-%m') as month, status, COUNT(*) as count"))
+                ->groupBy('month', 'status')
+                ->get();
+        } elseif (array_key_exists($filter, $quarterMonths)) {
+            // Filter by quarter months
+            $months = $quarterMonths[$filter];
+            $subscribers = $subscribersQuery
+                ->select(DB::raw("DATE_FORMAT(created_at, '%Y-%m') as month, status, COUNT(*) as count"))
+                ->whereIn(DB::raw('MONTH(created_at)'), $months)
+                ->groupBy('month', 'status')
+                ->get();
+        } else {
+            // Handle invalid filter
+            return response()->json(['data' => []]);
+        }
+    
+        // Fill missing months with zero data
+        $monthsInQuarter = $quarterMonths[$filter] ?? [];
+        $formattedData = [];
+        
+        // Initialize an array for all months in the quarter with zero counts
+        foreach ($monthsInQuarter as $month) {
+            $formattedData[$month] = 0; // Set default to zero for all months
+        }
+    
+        // Overwrite with actual data from the database query
+        foreach ($subscribers as $subscriber) {
+            $monthNumber = (int) date('n', strtotime($subscriber->month)); // Extract numeric month
+            $formattedData[$monthNumber] = $subscriber->count;
+        }
+    
+        // Convert associative array into format required by the chart
+        $finalFormattedData = [];
+        foreach ($formattedData as $month => $count) {
+            $finalFormattedData[] = [
+                'x' => $month, // The month (1-12)
+                'y' => $count, // Subscriber count
+            ];
+        }
+    
+        return response()->json([
+            'data' => $finalFormattedData
+        ]);
+    }
     
 
     
+    public function getCausesData(Request $request)
+    {
+        $filter = $request->filter;
+        $causesQuery = Cause::query();
+
+        // Filter by quarter or year
+        if ($filter != 'year') {
+            $quarterMonths = $this->getQuarterMonths($filter);
+            $causesQuery->whereIn(DB::raw('MONTH(created_at)'), $quarterMonths);
+        }
+
+        $causes = $causesQuery->select(DB::raw("count(*) as count, MONTH(created_at) as month"))
+            ->groupBy('month')
+            ->pluck('count', 'month')
+            ->toArray();
+
+        // Format the causes data
+        $formattedCauses = [];
+        foreach ($causes as $month => $count) {
+            $formattedCauses[] = [
+                'x' => $month, // Month (1 to 12)
+                'y' => $count // Count of causes
+            ];
+        }
+
+        return response()->json([
+            'data' => $formattedCauses // Return formatted data
+        ]);
+    }
+
     
+    public function getDonationsData(Request $request)
+    {
+        $filter = $request->filter;
+        $donationsQuery = CauseDonation::query();
+
+        if ($filter != 'year') {
+            $quarterMonths = $this->getQuarterMonths($filter);
+            $donationsQuery->whereIn(DB::raw('MONTH(created_at)'), $quarterMonths);
+        }
+
+        $donations = $donationsQuery->select(DB::raw("sum(price) as total, MONTH(created_at) as month"))
+            ->groupBy('month')
+            ->pluck('total', 'month')
+            ->toArray();
+
+        // Format the donations data
+        $formattedDonations = [];
+        foreach ($donations as $month => $total) {
+            $formattedDonations[] = [
+                'x' => $month, // Month (1 to 12)
+                'y' => $total // Total donations
+            ];
+        }
+
+        return response()->json([
+            'data' => $formattedDonations // Return formatted data
+        ]);
+    }
+
+    
+    protected function getQuarterMonths($quarter)
+    {
+        $quarters = [
+            'quarter1' => [1, 2, 3],
+            'quarter2' => [4, 5, 6],
+            'quarter3' => [7, 8, 9],
+            'quarter4' => [10, 11, 12],
+        ];
+    
+        return $quarters[$quarter] ?? [];
+    }
+    
+ 
     public function edit_profile()
     {
         return view('admin.edit_profile');
     }
+
+
     public function edit_profile_submit(Request $request)
     {
         $request->validate([

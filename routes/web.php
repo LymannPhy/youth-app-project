@@ -162,6 +162,13 @@ Route::middleware('admin')->prefix('admin')->group(function () {
     Route::get('/edit-profile', [AdminController::class, 'edit_profile'])->name('admin_edit_profile');
     Route::post('/edit-profile-submit', [AdminController::class, 'edit_profile_submit'])->name('admin_edit_profile_submit');
 
+
+    Route::get('/admin/subscribers-data', [AdminController::class, 'getSubscribersData'])->name('subscribers.data');
+    Route::get('/admin/causes-data', [AdminController::class, 'getCausesData'])->name('causes.data');
+    Route::get('/admin/donations-data', [AdminController::class, 'getDonationsData'])->name('donations.data');
+
+
+
     Route::get('/slider/index', [AdminSliderController::class, 'index'])->name('admin_slider_index');
     Route::get('/slider/create', [AdminSliderController::class, 'create'])->name('admin_slider_create');
     Route::post('/slider/create/submit', [AdminSliderController::class, 'create_submit'])->name('admin_slider_create_submit');

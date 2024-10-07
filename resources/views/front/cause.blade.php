@@ -55,6 +55,10 @@
                         </div>
                     </div>
                     <div class="left-item">
+                        <h2>Project Timeline</h2>
+                        <p>Start Date: {{ $cause->start_date }}-End Date: {{ $cause->end_date }}</p>
+                    </div>
+                    <div class="left-item">
                         <h2>Objective</h2>
                         {{ $cause->objective }}
                     </div>
@@ -82,34 +86,6 @@
                         @foreach ($cause->partnershipsAndCollaborations as $partnership)
                             <button class="btn btn-warning">{{ $partnership->name }}</button>
                         @endforeach
-                    </div>
-
-                    <div class="left-item">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <h6 class="card-title">Project Timeline</h6>
-                                        <div id="content">
-                                            <ul class="timeline">
-                                                <li class="event" data-date="{{ $cause->start_date }}">
-                                                    <h3>Start Date</h3>
-                                                    <p>This is the date when the youth project officially begins. It marks
-                                                        the commencement of all planned activities, initiatives, and
-                                                        milestones.</p>
-                                                </li>
-                                                <li class="event" data-date="{{ $cause->end_date }}">
-                                                    <h3>End Date</h3>
-                                                    <p>This is the date when the youth project is scheduled to be completed.
-                                                        By the end date, all activities and objectives outlined in the
-                                                        project's plan should be achieved.</p>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
 
                     <div class="left-item">
