@@ -4,7 +4,7 @@
     <div class="main-content">
         <section class="section">
             <div class="section-header d-flex justify-content-between">
-                <h1>Edit Cause</h1>
+                <h1>Edit Project</h1>
                 <div>
                     <a href="{{ route('admin_cause_index') }}" class="btn btn-primary">
                         <i class="fas fa-plus"></i> View All

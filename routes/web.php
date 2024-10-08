@@ -40,11 +40,13 @@ use App\Http\Controllers\Admin\AdminOtherPageController;
 use App\Http\Controllers\Admin\AdminSubscriberController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminVolunteerOpportunityController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\SocialLoginController;
 use App\Http\Controllers\Front\AwardController;
 use App\Http\Controllers\Front\BookmarkController;
 
 require __DIR__.'/auth.php';
+
 
 /* Front */
 Route::get('/', [HomeController::class, 'index'])->name('home');

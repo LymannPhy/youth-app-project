@@ -174,8 +174,10 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute(
+            'content'); // CSRF token outside
+
             const likeButtons = document.querySelectorAll('.like-btn');
-            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
             likeButtons.forEach(button => {
                 button.addEventListener('click', function() {
@@ -191,58 +193,71 @@
                                 cause_id: causeId
                             }),
                         })
-                        .then(response => response.json())
+                        .then(response => {
+                            // Check if the response is OK (status 200) and parse JSON
+                            if (response.ok) {
+                                return response.json();
+                            } else if (response.status === 401) {
+                                throw new Error('You need to be logged in to like a project.');
+                            } else {
+                                throw new Error(
+                                    'An error occurred while processing your request.');
+                            }
+                        })
                         .then(data => {
-                            if (data.success) {
-                                // Toggle heart icon class and update like count
+                            // Handle successful response
+                            const icon = this.querySelector('i');
+                            icon.classList.toggle('fas');
+                            icon.classList.toggle('far');
+                            const likeCountElement = this.querySelector('.like-count');
+                            likeCountElement.textContent = data.likes;
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert(error.message); // Show error message from the thrown error
+                        });
+                });
+            });
+
+            const bookmarkButtons = document.querySelectorAll('.bookmark-btn');
+
+            bookmarkButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const causeId = this.getAttribute('data-id');
+
+                    fetch(`/causes/${causeId}/bookmark`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                cause_id: causeId
+                            }),
+                        })
+                        .then(response => {
+                            if (response.ok) {
+                                // Toggle bookmark icon
                                 const icon = this.querySelector('i');
                                 icon.classList.toggle('fas');
                                 icon.classList.toggle('far');
-                                const likeCountElement = this.querySelector('.like-count');
-                                likeCountElement.textContent = data.likes;
+                            } else if (response.status === 401) {
+                                throw new Error(
+                                    'You need to be logged in to bookmark a project.');
                             } else {
-                                alert('You need to be logged in to like a project.');
+                                throw new Error(
+                                    'An error occurred while trying to bookmark the project.'
+                                    );
                             }
                         })
                         .catch(error => {
                             console.error('Error:', error);
-                            alert('An error occurred while trying to like the project.');
+                            alert(error.message);
                         });
                 });
             });
         });
-
-        const bookmarkButtons = document.querySelectorAll('.bookmark-btn');
-
-        bookmarkButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const causeId = this.getAttribute('data-id');
-
-                fetch(`/causes/${causeId}/bookmark`, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': csrfToken,
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            cause_id: causeId
-                        }),
-                    })
-                    .then(response => {
-                        if (response.ok) {
-                            // Toggle bookmark icon class
-                            const icon = this.querySelector('i');
-                            icon.classList.toggle('fas');
-                            icon.classList.toggle('far');
-                        } else {
-                            alert('An error occurred while trying to bookmark the project.');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('An error occurred while trying to bookmark the project.');
-                    });
-            });
-        });
     </script>
+
+
 @endsection

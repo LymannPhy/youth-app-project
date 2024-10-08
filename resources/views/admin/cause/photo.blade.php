@@ -4,10 +4,10 @@
     <div class="main-content">
         <section class="section">
             <div class="section-header d-flex justify-content-between">
-                <h1>Cause ({{ $cause_single->name }}) Photos</h1>
+                <h1>Project ({{ $cause_single->name }}) Photos</h1>
                 <div>
                     <a href="{{ route('admin_cause_index') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Back to
-                        Causes</a>
+                        Projects</a>
                 </div>
             </div>
             <div class="section-body">

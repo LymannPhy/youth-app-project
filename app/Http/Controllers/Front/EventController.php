@@ -89,6 +89,11 @@ class EventController extends Controller
             return redirect()->back()->with('error','You cannot purchase more tickets than available.');
         }
 
+         // Check if the requested tickets exceed the available tickets
+        if ($request->number_of_tickets > $remaining_tickets) {
+            return redirect()->back()->with('error', 'You cannot purchase more tickets than available.');
+        }
+
         $total_price = $request->price * $request->number_of_tickets;
 
          // Store values in session

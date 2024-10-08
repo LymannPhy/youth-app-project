@@ -626,6 +626,14 @@
                 return; // Stop the function if no payment method is selected
             }
 
+            // Check if the user is logged in
+            @if (!Auth::check())
+                // Save the current URL in a session variable
+                sessionStorage.setItem('redirectUrl', window.location.href);
+                window.location.href = '/login'; // Redirect to login
+                return;
+            @endif
+
             // Prompt user to choose if they want to receive an invoice
             swal({
                 title: "Receive Invoice",
