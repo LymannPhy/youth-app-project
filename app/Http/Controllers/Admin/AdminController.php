@@ -2,9 +2,6 @@
 
 namespace App\Http\Controllers\Admin;
 
-// use App\Charts\MonthlyCausesAreaChart;
-// use App\Charts\MonthlyCausesDonationsBarChart;
-// use App\Charts\SubscribersStatusChart;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Admin;
@@ -50,29 +47,29 @@ class AdminController extends Controller
         // Ensure all 12 months are represented for donations
         $causeDonations = array_replace(array_fill_keys($months, 0), $causeDonations);
     
-        // Fetch volunteer data for the Datatables
+        // Fetch volunteer data for the DataTables with a join to volunteer_opportunities and users
         if (request()->ajax()) {
-            $volunteers = Volunteer::latest()->get();
+            $volunteers = Volunteer::select('volunteers.*', 'volunteer_opportunities.role', 'users.name as user_name')
+                ->join('volunteer_opportunities', 'volunteers.volunteer_opportunity_id', '=', 'volunteer_opportunities.id')
+                ->join('users', 'volunteers.user_id', '=', 'users.id') // Join to get 'name' from users table
+                ->latest()
+                ->get();
+
             return DataTables::of($volunteers)
                 ->addIndexColumn()
-                ->addColumn('action', function($row) {
-                    $editUrl = route('admin_volunteer_edit', $row->id);
-                    $deleteUrl = route('admin_volunteer_delete', $row->id);
-                    $actionBtn = '<a href="' . $editUrl . '" class="edit btn btn-primary btn-sm">Edit</a>
-                    <form method="POST" style="display:inline">
-                        <a href="javascript:void(0)" data-url="'.$deleteUrl.'" class="delete-button btn btn-danger btn-sm">Delete</a>
-                    </form>';
-                    return $actionBtn;
+                ->addColumn('name', function($row) {
+                    return $row->user_name; 
                 })
-                ->rawColumns(['action'])
+                ->rawColumns(['name'])
                 ->make(true);
         }
-    
+
+
         // Return view with the data passed to it
         return view('admin.dashboard', [
-            'subscribers' => json_encode(array_values($subscribers)), // Convert to array of counts
-            'causes' => json_encode(array_values($causes)), // Convert to array of counts
-            'causeDonations' => json_encode(array_values($causeDonations)), // Convert to array of totals
+            'subscribers' => json_encode(array_values($subscribers)), 
+            'causes' => json_encode(array_values($causes)), 
+            'causeDonations' => json_encode(array_values($causeDonations)), 
             'total_events' => Event::count(),
             'total_volunteers' => Volunteer::count(),
             'total_users' => User::count(),
@@ -219,8 +216,44 @@ class AdminController extends Controller
     
         return $quarters[$quarter] ?? [];
     }
+
+    // Volunteer Method is started
+    public function updateStatus(Request $request, $id)
+    {
+        // Validate the status field
+        $validated = $request->validate([
+            'status' => 'required|in:approve,reject',
+        ]);
     
- 
+        // Find the volunteer by ID and update the status
+        $volunteer = Volunteer::findOrFail($id);
+        $volunteer->status = $request->input('status');
+        $volunteer->save();
+    
+        return redirect()->back()->with('success', 'Volunteer status updated successfully.');
+    }
+
+    public function printVolunteer($id)
+    {
+        // Fetch the specific volunteer by ID with related user and volunteerOpportunity
+        $volunteer = Volunteer::with(['user', 'volunteerOpportunity'])->findOrFail($id);
+    
+        // Prepare the data to pass to the view
+        $data = [
+            'id' => $volunteer->id,
+            'name' => $volunteer->user->name,
+            'role' => $volunteer->volunteerOpportunity->role ?? 'N/A',
+            'address' => $volunteer->address ?? 'N/A',
+            'skills' => $volunteer->skills ?? 'N/A',
+            'experience' => $volunteer->experience ?? 'N/A',
+            'education' => $volunteer->education ?? 'N/A',
+            'languages_spoken' => $volunteer->languages_spoken ?? 'N/A',
+        ];
+    
+        // Return the view with the volunteer data
+        return view('admin.volunteers.print', compact('data'));
+    }
+
     public function edit_profile()
     {
         return view('admin.edit_profile');

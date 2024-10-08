@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Front;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Volunteer;
+use App\Models\VolunteerOpportunity;
 use Illuminate\Support\Facades\Auth;
 use App\Services\CVParsingService;
 use Smalot\PdfParser\Parser as PdfParser;
@@ -23,9 +24,13 @@ class VolunteerController extends Controller
     {
         // Fetch only volunteers with the status 'approve'
         $volunteers = Volunteer::where('status', 'approve')->paginate(20);
-        
-        return view('front.volunteers', compact('volunteers'));
+    
+        // Fetch available volunteer opportunities
+        $volunteer_opportunities = VolunteerOpportunity::all();
+    
+        return view('front.volunteers', compact('volunteers', 'volunteer_opportunities'));
     }
+    
 
 
     public function detail($id)
@@ -39,23 +44,24 @@ class VolunteerController extends Controller
         // Validate the CV file
         $request->validate([
             'cv' => 'required|file|mimes:pdf,doc,docx',
+            'volunteer_opportunity_id' => 'required|exists:volunteer_opportunities,id', // Validate opportunity exists
         ]);
-    
+
         // Store the uploaded CV file
         $cvPath = $request->file('cv')->store('uploads/cvs');
         $cvFullPath = storage_path('app/' . $cvPath);
-    
+
         // Extract data from the uploaded CV file
         $text = $this->extractTextFromCV($cvFullPath, $request->file('cv')->getClientOriginalExtension());
-    
+
         // Extract specific fields from the CV content using the service
         $phone = $this->cvParsingService->extractSection($text, 'phone');
         // Ensure phone number starts with +855
         $phone = $phone ? '+855' . ltrim($phone, '+') : null;
-    
+
         // Retrieve the authenticated user's profile photo
         $userPhoto = Auth::user()->photo; // Assuming the `photo` field is available in the users table.
-    
+
         // Prepare the volunteer data
         $volunteerData = [
             'phone' => $phone,
@@ -79,8 +85,9 @@ class VolunteerController extends Controller
             'emergency_contact' => $this->cvParsingService->extractSection($text, 'emergency_contact'),
             'cv_file' => $cvPath,
             'status' => 'pending',
+            'volunteer_opportunity_id' => $request->volunteer_opportunity_id,
         ];
-    
+
         // Create or update the volunteer record
         $volunteer = Volunteer::updateOrCreate(
             ['user_id' => Auth::id()],
@@ -89,13 +96,12 @@ class VolunteerController extends Controller
                 'name' => Auth::user()->name,
                 'email' => Auth::user()->email,
                 'date_of_birth' => $volunteerData['date_of_birth'] ? date('Y-m-d', strtotime($volunteerData['date_of_birth'])) : null,
-                'photo' => $userPhoto, // Set the photo from the user's profile
+                'photo' => $userPhoto, 
             ])
         );
-    
+
         return redirect()->back()->with('success', 'Your CV has been uploaded successfully. We will review it and contact you.');
     }
-    
 
     /**
      * Extract text from the uploaded CV file.

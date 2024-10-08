@@ -13,11 +13,8 @@ return new class extends Migration
     {
         Schema::create('volunteers', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id'); // Foreign key to users table
-            $table->string('name');
-            $table->string('email')->nullable();
-            $table->string('phone')->nullable();
-            $table->string('photo')->nullable();
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('volunteer_opportunity_id'); 
             $table->text('address')->nullable();
             $table->date('date_of_birth')->nullable();
             $table->string('profession', 500);
@@ -39,12 +36,12 @@ return new class extends Migration
             $table->text('emergency_contact')->nullable();
             $table->enum('status', ['pending', 'approve', 'reject'])->default('pending')->nullable();
             $table->timestamps();
-        
-            // Foreign key constraint to reference users table
+    
+            // Foreign key constraints
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('volunteer_opportunity_id')->references('id')->on('volunteer_opportunities')->onDelete('cascade'); // Link to volunteer_opportunities table
         }); 
     }
-    
 
     /**
      * Reverse the migrations.

@@ -12,22 +12,6 @@
                             <li class="breadcrumb-item active">Volunteers</li>
                         </ol>
                     </div>
-                    <div class="breadcrumb-container text-center mt-2">
-                        <!-- Become a volunteer button -->
-                        @auth
-                            @php
-                                // Fetch the authenticated user's volunteer data
-                                $volunteer = Auth::user()->volunteer;
-                            @endphp
-
-                            @if (!$volunteer || (!$volunteer->cv_file && $volunteer->status !== 'approve'))
-                                <!-- Show the button only if the user is not a volunteer or has no CV and is not approved -->
-                                <button class="btn btn-primary" data-toggle="modal" data-target="#volunteerModal">
-                                    <i class="fas fa-file"></i> Become Volunteer?
-                                </button>
-                            @endif
-                        @endauth
-                    </div>
                 </div>
             </div>
         </div>
@@ -40,7 +24,7 @@
                     <div class="col-lg-3 col-md-6">
                         <div class="item">
                             <div class="photo">
-                                <img src="{{ asset('uploads/' . $volunteer->photo) }}" alt="" />
+                                <img src="{{ asset('uploads/' . $volunteer->user->photo) }}" alt="" />
                             </div>
                             <div class="text">
                                 <h2><a href="{{ route('volunteer', $volunteer->id) }}">{{ $volunteer->name }}</a></h2>
@@ -48,16 +32,19 @@
                                 <div class="social">
                                     <ul>
                                         @if ($volunteer->facebook)
-                                            <li><a href="{{ $volunteer->facebook }}"><i class="fab fa-facebook-f"></i></a></li>
+                                            <li><a href="{{ $volunteer->facebook }}"><i class="fab fa-facebook-f"></i></a>
+                                            </li>
                                         @endif
                                         @if ($volunteer->twitter)
                                             <li><a href="{{ $volunteer->twitter }}"><i class="fab fa-twitter"></i></a></li>
                                         @endif
                                         @if ($volunteer->linkedin)
-                                            <li><a href="{{ $volunteer->linkedin }}"><i class="fab fa-linkedin-in"></i></a></li>
+                                            <li><a href="{{ $volunteer->linkedin }}"><i class="fab fa-linkedin-in"></i></a>
+                                            </li>
                                         @endif
                                         @if ($volunteer->instagram)
-                                            <li><a href="{{ $volunteer->instagram }}"><i class="fab fa-instagram"></i></a></li>
+                                            <li><a href="{{ $volunteer->instagram }}"><i class="fab fa-instagram"></i></a>
+                                            </li>
                                         @endif
                                     </ul>
                                 </div>
@@ -73,8 +60,60 @@
         </div>
     </div>
 
+    <div class="container pt-4">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="table-responsive">
+                    <table class="table table-striped text-success table-border border-light">
+                        <thead class="border-light">
+                            <tr>
+                                <th scope="col">Role</th>
+                                <th scope="col">Location</th>
+                                <th scope="col">Type</th>
+                                <th scope="col"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($volunteer_opportunities as $opportunity)
+                                <tr>
+                                    <td class="align-middle">
+                                        <a href="#"
+                                            class="text-success font-weight-bold">{{ $opportunity->role }}</a>
+                                    </td>
+                                    <td class="align-middle">{{ $opportunity->location }}</td>
+                                    <td class="align-middle">{{ $opportunity->type }}</td>
+                                    <td class="align-middle">
+                                        <!-- Become a volunteer button -->
+                                        @auth
+                                            @php
+                                                // Fetch the authenticated user's volunteer data
+                                                $volunteer = Auth::user()->volunteer;
+                                            @endphp
+
+                                            @if (!$volunteer || (!$volunteer->cv_file && $volunteer->status !== 'approve'))
+                                                <a href="#" class="btn btn-outline-info btn-sm" data-toggle="modal"
+                                                    data-target="#volunteerModal">Apply Now</a>
+                                            @endif
+                                        @endauth
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="col-md-12 text-center pt-4">
+                <p>We are always on the lookout for talented folk to join our team. Apply to: <a
+                        href="mailto:info@yrdp.org">info@yrdp.org</a></p>
+            </div>
+        </div>
+    </div>
+
+
     <!-- Modal for CV Upload (moved outside of the loop) -->
-    <div class="modal fade" id="volunteerModal" tabindex="-1" role="dialog" aria-labelledby="volunteerModalLabel" aria-hidden="true">
+    <div class="modal fade" id="volunteerModal" tabindex="-1" role="dialog" aria-labelledby="volunteerModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -90,6 +129,9 @@
                         <div class="form-group">
                             <label for="cv">Upload CV</label>
                             <input type="file" name="cv" class="form-control" required>
+                            <input type="hidden" name="volunteer_opportunity_id"
+                                value="{{ $volunteer_opportunities->first()->id }}">
+
                         </div>
                         <div class="modal-footer">
                             <button type="submit" class="btn btn-success">Submit</button>

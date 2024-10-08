@@ -52,18 +52,26 @@ class AdminPhotoController extends Controller
             $request->validate([
                 'photo' => 'image|mimes:jpg,jpeg,png',
             ]);
-            unlink(public_path('uploads/'.$photo->photo));
 
-            $final_name = 'photo_'.time().'.'.$request->photo->extension();
+            // Check if the old file exists before attempting to delete it
+            $oldFilePath = public_path('uploads/' . $photo->photo);
+            if (file_exists($oldFilePath) && is_file($oldFilePath)) {
+                unlink($oldFilePath);
+            }
+
+            // Save the new file
+            $final_name = 'photo_' . time() . '.' . $request->photo->extension();
             $request->photo->move(public_path('uploads'), $final_name);
             $photo->photo = $final_name;
         }
 
+        // Update the other fields
         $photo->photo_category_id = $request->photo_category_id;
         $photo->update();
 
-        return redirect()->route('admin_photo_index')->with('success','Photo updated successfully');
+        return redirect()->route('admin_photo_index')->with('success', 'Photo updated successfully');
     }
+
 
     public function delete($id)
     {

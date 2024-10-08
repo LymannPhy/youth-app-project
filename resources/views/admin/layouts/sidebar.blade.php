@@ -124,9 +124,10 @@
                     href="{{ route('admin_cause_approval') }}"><i class="fa-solid fa-person-circle-check"></i>
                     <span>Projects Approval</span></a></li>
 
-            <li class="{{ Request::is('admin/volunteer/*') ? 'active' : '' }}"><a class="nav-link"
-                    href="{{ route('admin_volunteer_index') }}"><i class="fa-solid fa-handshake-angle"></i>
-                    <span>Volunteers</span></a></li>
+            <li class="{{ Request::is('admin/volunteer-opportunity/*') ? 'active' : '' }}"><a class="nav-link"
+                    href="{{ route('admin_volunteer_opportunity_index') }}"><i
+                        class="fa-solid fa-handshake-angle"></i>
+                    <span>Volunteer opportunities</span></a></li>
 
             <li class="{{ Request::is('admin/users/*') ? 'active' : '' }}"><a class="nav-link"
                     href="{{ route('admin_user_index') }}"><i class="fa-solid fa-user"></i>

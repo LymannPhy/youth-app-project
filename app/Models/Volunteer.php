@@ -9,13 +9,9 @@ class Volunteer extends Model
 {
     use HasFactory;
 
-    // Add the user_id to the fillable properties
     protected $fillable = [
         'user_id',
-        'name',
-        'email',
-        'phone',
-        'photo',
+        'volunteer_opportunity_id',
         'address',
         'date_of_birth',
         'profession',
@@ -35,6 +31,16 @@ class Volunteer extends Model
         'cv_file',
         'languages_spoken',
         'emergency_contact',
-        'status',
+        'status'
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function volunteerOpportunity()
+    {
+        return $this->belongsTo(VolunteerOpportunity::class);
+    }
 }

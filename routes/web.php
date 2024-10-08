@@ -39,6 +39,7 @@ use App\Http\Controllers\Admin\AdminSettingController;
 use App\Http\Controllers\Admin\AdminOtherPageController;
 use App\Http\Controllers\Admin\AdminSubscriberController;
 use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\Admin\AdminVolunteerOpportunityController;
 use App\Http\Controllers\Auth\SocialLoginController;
 use App\Http\Controllers\Front\AwardController;
 use App\Http\Controllers\Front\BookmarkController;
@@ -166,8 +167,8 @@ Route::middleware('admin')->prefix('admin')->group(function () {
     Route::get('/admin/subscribers-data', [AdminController::class, 'getSubscribersData'])->name('subscribers.data');
     Route::get('/admin/causes-data', [AdminController::class, 'getCausesData'])->name('causes.data');
     Route::get('/admin/donations-data', [AdminController::class, 'getDonationsData'])->name('donations.data');
-
-
+    Route::patch('/admin/volunteer/updateStatus/{id}', [AdminController::class, 'updateStatus'])->name('admin_volunteer_update_status');
+    Route::get('/admin/volunteer/print/{id}', [AdminController::class, 'printVolunteer'])->name('volunteer_print');
 
     Route::get('/slider/index', [AdminSliderController::class, 'index'])->name('admin_slider_index');
     Route::get('/slider/create', [AdminSliderController::class, 'create'])->name('admin_slider_create');
@@ -218,14 +219,13 @@ Route::middleware('admin')->prefix('admin')->group(function () {
     Route::get('/other-pages/privacy', [AdminOtherPageController::class, 'privacy'])->name('admin_privacy_page');
     Route::post('/other-pages/privacy-update', [AdminOtherPageController::class, 'privacy_update'])->name('admin_privacy_page_update');
 
-
-    Route::get('/volunteer/index', [AdminVolunteerController::class, 'index'])->name('admin_volunteer_index');
-    Route::get('/volunteer/create', [AdminVolunteerController::class, 'create'])->name('admin_volunteer_create');
-    Route::post('/volunteer/create/submit', [AdminVolunteerController::class, 'create_submit'])->name('admin_volunteer_create_submit');
-    Route::get('/volunteer/edit/{id}', [AdminVolunteerController::class, 'edit'])->name('admin_volunteer_edit');
-    Route::post('/volunteer/edit/submit/{id}', [AdminVolunteerController::class, 'edit_submit'])->name('admin_volunteer_edit_submit');
-    Route::delete('/volunteer/delete/{id}', [AdminVolunteerController::class, 'delete'])->name('admin_volunteer_delete');
-    Route::post('/volunteers/{id}/update-status', [AdminVolunteerController::class, 'updateStatus'])->name('admin_volunteer_update_status');
+    Route::get('/volunteer-opportunity/index', [AdminVolunteerOpportunityController::class, 'index'])->name('admin_volunteer_opportunity_index');
+    Route::get('/volunteer-opportunity/create', [AdminVolunteerOpportunityController::class, 'create'])->name('admin_volunteer_opportunity_create');
+    Route::post('/volunteer-opportunity/create/submit', [AdminVolunteerOpportunityController::class, 'create_submit'])->name('admin_volunteer_opportunity_create_submit');
+    Route::get('/volunteer-opportunity/edit/{id}', [AdminVolunteerOpportunityController::class, 'edit'])->name('admin_volunteer_opportunity_edit');
+    Route::post('/volunteer-opportunity/edit/submit/{id}', [AdminVolunteerOpportunityController::class, 'edit_submit'])->name('admin_volunteer_opportunity_edit_submit');
+    Route::delete('/volunteer-opportunity/delete/{id}', [AdminVolunteerOpportunityController::class, 'delete'])->name('admin_volunteer_opportunity_delete');
+    
 
     Route::get('/admin/users', [AdminUserController::class, 'index'])->name('admin_user_index');
     Route::get('/admin/user/block/{id}', [AdminUserController::class, 'block'])->name('admin_user_block');
